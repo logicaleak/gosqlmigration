@@ -8,4 +8,5 @@ type Servicer interface {
 	Applied() ([]*Migration, error)
 	Apply(*Migration) error
 	Reverse(*Migration) error
+	GetDirectoryPath() string
 }

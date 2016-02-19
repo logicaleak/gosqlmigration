@@ -15,6 +15,10 @@ func Reverse(ctx *cli.Context) {
 	}
 }
 
+func ReverseTo(ctx *cli.Context) {
+//	err := reverseTo(service, migrationName)
+}
+
 func reverse(service Servicer, all bool) error {
 	initialized, err := service.Initialized()
 	if err != nil {
@@ -36,38 +40,16 @@ func reverse(service Servicer, all bool) error {
 	}
 
 	if len(applied) == 0 {
-		return nil
+		return fmt.Errorf("There are no applied migrations to reverse...")
 	}
 
-	var i, j = len(available) - 1, len(applied) - 1
-	for i >= 0 && j >= 0 && available[i].Name > applied[j].Name {
-		i--
+	//Check if available and applied migration consistency is unbroken
+	err = checkAvailableAppliedSync(available, applied)
+	if err != nil {
+		return err
 	}
 
-	for i >= 0 && j >= 0 {
-		if available[i].Name == applied[j].Name {
-			i--
-			j--
-			continue
-		}
-
-		if available[i].Name < applied[j].Name {
-			return fmt.Errorf("missing migration: %s", applied[j].Name)
-		}
-
-		if available[i].Name > applied[j].Name {
-			return fmt.Errorf("out of order migration: %s", available[i].Name)
-		}
-	}
-
-	if i >= 0 {
-		return fmt.Errorf("out of order migration: %s", available[i].Name)
-	}
-
-	if j >= 0 {
-		return fmt.Errorf("missing migration: %s", applied[j].Name)
-	}
-
+	//Sort the applied migrations from last to first
 	slice.Sort(applied, func(i, j int) bool {
 		return applied[i].Name > applied[j].Name
 	})
@@ -83,5 +65,9 @@ func reverse(service Servicer, all bool) error {
 		}
 	}
 
+	return nil
+}
+
+func reverseTo(service Servicer, migrationName string)  error {
 	return nil
 }

@@ -58,6 +58,11 @@ func (s Service) Initialize() error {
 	return s.conn.CreateTable()
 }
 
+func (s Service) GetDirectoryPath() string {
+	return filepath.Join(s.env.Directory)
+}
+
+
 // Available return the migrations in the environment's directory sorted in
 // ascending lexicographic order.
 func (s Service) Available() ([]*Migration, error) {

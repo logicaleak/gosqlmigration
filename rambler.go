@@ -61,6 +61,18 @@ func init() {
 				},
 			},
 			Action: Reverse,
+			Subcommands: []cli.Command{
+				{
+					Name:  "to",
+					Usage: "reverse to a specific migration state",
+					Action: ReverseTo,
+				},
+			},
+		},
+		{
+			Name: "create",
+			Usage: "create a new migration",
+			Action: Create,
 		},
 	}
 }

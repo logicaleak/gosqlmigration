@@ -38,32 +38,23 @@ func apply(service Servicer, all bool) error {
 		return fmt.Errorf("unable to retrieve applied migrations: %s", err)
 	}
 
-	var i, j = 0, 0
-	for i < len(available) && j < len(applied) {
-		if available[i].Name == applied[j].Name {
-			i++
-			j++
-			continue
-		}
-
-		if available[i].Name < applied[j].Name {
-			return fmt.Errorf("out of order migration: %s", available[i].Name)
-		}
-
-		if available[i].Name > applied[j].Name {
-			return fmt.Errorf("missing migration: %s", applied[j].Name)
-		}
+	//Check if available and applied migration consistency is unbroken
+	err = checkAvailableAppliedSync(available, applied)
+	if err != nil {
+		return err
 	}
 
-	if j != len(applied) {
-		return fmt.Errorf("missing migration: %s", applied[j].Name)
+	appliedCount := len(applied)
+	availableCount := len(available)
+
+	//There are no inconsistencies between applied and available migrations
+	//However every migration is already applied
+	if availableCount == appliedCount {
+		return fmt.Errorf("All migrations are already applied")
 	}
 
-	if i == len(available) {
-		return nil
-	}
-
-	for _, migration := range available[i:] {
+	//Start from the first nonaplied migration
+	for _, migration := range available[appliedCount:] {
 		err := service.Apply(migration)
 		if err != nil {
 			return err
